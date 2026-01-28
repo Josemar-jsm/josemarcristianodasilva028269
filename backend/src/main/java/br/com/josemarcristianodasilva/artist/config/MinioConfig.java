@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@EnableConfigurationProperties(MinioProperties.class,UploadProperties.class)
+@EnableConfigurationProperties({MinioProperties.class,UploadProperties.class})
 public class MinioConfig {
 
     @Bean

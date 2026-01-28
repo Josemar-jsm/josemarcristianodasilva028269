@@ -14,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 @Service
 public class AlbumService {
@@ -83,6 +84,7 @@ public class AlbumService {
     }
     @Transactional
     public AlbumCoverResponse uploadCover(Long albumId, MultipartFile file) {
+
         if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("File is required");
         }
@@ -96,29 +98,38 @@ public class AlbumService {
             throw new IllegalArgumentException("Invalid file type. Allowed: image/jpeg, image/png, image/webp");
         }
 
-
         Album album = albumRepository.findById(albumId)
                 .orElseThrow(() -> new ResourceNotFoundException("Album not found: " + albumId));
 
-            String oldKey = album.getCoverObjectKey();
+        String oldKey = album.getCoverObjectKey();
 
-            String safeName = (file.getOriginalFilename() == null ? "cover" : file.getOriginalFilename())
-                    .replaceAll("[^a-zA-Z0-9._-]", "_");
+        // OBJECT KEY SEGURO (produção)
+        String ext = switch (ct) {
+            case "image/jpeg" -> ".jpg";
+            case "image/png"  -> ".png";
+            case "image/webp" -> ".webp";
+            default -> "";
+        };
 
-            String objectKey = "albums/" + albumId + "/cover-" + System.currentTimeMillis() + "-" + safeName;
+        String objectKey = "albums/%d/cover/%s%s"
+                .formatted(albumId, UUID.randomUUID(), ext);
 
-            minioStorageService.upload(file, objectKey);
+        minioStorageService.upload(file, objectKey);
 
-            album.setCoverObjectKey(objectKey);
-            albumRepository.save(album);
+        album.setCoverObjectKey(objectKey);
+        albumRepository.save(album);
 
-            if (oldKey != null && !oldKey.isBlank() && !oldKey.equals(objectKey)) {
-                minioStorageService.deleteIfExists(oldKey);
-            }
+        if (oldKey != null && !oldKey.isBlank() && !oldKey.equals(objectKey)) {
+            minioStorageService.deleteIfExists(oldKey);
+        }
 
-            return new AlbumCoverResponse(album.getId(), objectKey, minioStorageService.presignedGetUrl(objectKey));
-
+        return new AlbumCoverResponse(
+                album.getId(),
+                objectKey,
+                minioStorageService.presignedGetUrl(objectKey)
+        );
     }
+
     @Transactional(readOnly = true)
     public String getCoverUrl(Long albumId) {
         Album album = albumRepository.findById(albumId)
