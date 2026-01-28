@@ -2,6 +2,7 @@ package br.com.josemarcristianodasilva.artist.service;
 
 import br.com.josemarcristianodasilva.artist.api.dto.AlbumCoverResponse;
 import br.com.josemarcristianodasilva.artist.api.exception.ResourceNotFoundException;
+import br.com.josemarcristianodasilva.artist.config.UploadProperties;
 import br.com.josemarcristianodasilva.artist.domain.model.Album;
 import br.com.josemarcristianodasilva.artist.repository.AlbumRepository;
 import br.com.josemarcristianodasilva.artist.repository.ArtistRepository;
@@ -19,13 +20,15 @@ public class AlbumService {
 
     private final AlbumRepository albumRepository;
     private final ArtistRepository artistRepository;
-
     private final MinioStorageService minioStorageService;
 
-    public AlbumService(AlbumRepository albumRepository, ArtistRepository artistRepository,MinioStorageService minioStorageService) {
+    private final UploadProperties uploadProperties;
+
+    public AlbumService(AlbumRepository albumRepository, ArtistRepository artistRepository, MinioStorageService minioStorageService, UploadProperties uploadProperties) {
         this.albumRepository = albumRepository;
         this.artistRepository = artistRepository;
         this.minioStorageService = minioStorageService;
+        this.uploadProperties = uploadProperties;
     }
 
     @Transactional(readOnly = true)
@@ -83,6 +86,16 @@ public class AlbumService {
         if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("File is required");
         }
+
+        if (file.getSize() > uploadProperties.getMaxBytes()) {
+            throw new IllegalArgumentException("File too large. Max bytes: " + uploadProperties.getMaxBytes());
+        }
+
+        String ct = file.getContentType();
+        if (ct == null || !(ct.equals("image/jpeg") || ct.equals("image/png") || ct.equals("image/webp"))) {
+            throw new IllegalArgumentException("Invalid file type. Allowed: image/jpeg, image/png, image/webp");
+        }
+
 
         Album album = albumRepository.findById(albumId)
                 .orElseThrow(() -> new ResourceNotFoundException("Album not found: " + albumId));
