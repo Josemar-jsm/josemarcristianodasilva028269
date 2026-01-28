@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 
 @RestController
@@ -56,4 +57,18 @@ public class AlbumController {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
+    @PostMapping("/{id}/cover")
+    public ResponseEntity<AlbumCoverResponse> uploadCover(
+            @PathVariable Long id,
+            @RequestParam("file") MultipartFile file
+    ) {
+        return ResponseEntity.ok(service.uploadCover(id, file));
+    }
+
+    @GetMapping("/{id}/cover-url")
+    public ResponseEntity<String> getCoverUrl(@PathVariable Long id) {
+        return ResponseEntity.ok(service.getCoverUrl(id));
+    }
+
+
 }
