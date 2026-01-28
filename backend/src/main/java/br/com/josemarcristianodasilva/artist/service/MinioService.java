@@ -1,11 +1,13 @@
 package br.com.josemarcristianodasilva.artist.service;
 
+import br.com.josemarcristianodasilva.artist.config.MinioProperties;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
 import io.minio.GetPresignedObjectUrlArgs;
 import io.minio.http.Method;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
 
 @Service
 public class MinioService {
