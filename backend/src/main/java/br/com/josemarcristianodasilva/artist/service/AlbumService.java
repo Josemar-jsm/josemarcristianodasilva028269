@@ -1,5 +1,7 @@
 package br.com.josemarcristianodasilva.artist.service;
 
+import br.com.josemarcristianodasilva.artist.api.dto.AlbumCoverResponse;
+import br.com.josemarcristianodasilva.artist.api.exception.ResourceNotFoundException;
 import br.com.josemarcristianodasilva.artist.domain.model.Album;
 import br.com.josemarcristianodasilva.artist.repository.AlbumRepository;
 import br.com.josemarcristianodasilva.artist.repository.ArtistRepository;
@@ -17,9 +19,12 @@ public class AlbumService {
     private final AlbumRepository albumRepository;
     private final ArtistRepository artistRepository;
 
-    public AlbumService(AlbumRepository albumRepository, ArtistRepository artistRepository) {
+    private final MinioStorageService minioStorageService;
+
+    public AlbumService(AlbumRepository albumRepository, ArtistRepository artistRepository,MinioStorageService minioStorageService) {
         this.albumRepository = albumRepository;
         this.artistRepository = artistRepository;
+        this.minioStorageService = minioStorageService;
     }
 
     @Transactional(readOnly = true)
@@ -71,5 +76,44 @@ public class AlbumService {
             throw new IllegalArgumentException("One or more artistIds are invalid.");
         }
         album.getArtists().addAll(artists);
+    }
+    @Transactional
+    public AlbumCoverResponse uploadCover(Long albumId, MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("File is required");
+        }
+
+        Album album = albumRepository.findById(albumId)
+                .orElseThrow(() -> new ResourceNotFoundException("Album not found: " + albumId));
+
+            String oldKey = album.getCoverObjectKey();
+
+            String safeName = (file.getOriginalFilename() == null ? "cover" : file.getOriginalFilename())
+                    .replaceAll("[^a-zA-Z0-9._-]", "_");
+
+            String objectKey = "albums/" + albumId + "/cover-" + System.currentTimeMillis() + "-" + safeName;
+
+            minioStorageService.upload(file, objectKey);
+
+            album.setCoverObjectKey(objectKey);
+            albumRepository.save(album);
+
+            if (oldKey != null && !oldKey.isBlank() && !oldKey.equals(objectKey)) {
+                minioStorageService.deleteIfExists(oldKey);
+            }
+
+            return new AlbumCoverResponse(album.getId(), objectKey, minioStorageService.presignedGetUrl(objectKey));
+
+    }
+    @Transactional(readOnly = true)
+    public String getCoverUrl(Long albumId) {
+        Album album = albumRepository.findById(albumId)
+                .orElseThrow(() -> new ResourceNotFoundException("Album not found: " + albumId));
+
+        if (album.getCoverObjectKey() == null || album.getCoverObjectKey().isBlank()) {
+            throw new ResourceNotFoundException("Album cover not found: " + albumId);
+        }
+
+        return minioStorageService.presignedGetUrl(album.getCoverObjectKey());
     }
 }
