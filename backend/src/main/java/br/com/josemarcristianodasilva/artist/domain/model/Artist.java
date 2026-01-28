@@ -1,5 +1,6 @@
-package br.com.josemarcristianodasilva.artist.domain;
+package br.com.josemarcristianodasilva.artist.domain.model;
 
+import br.com.josemarcristianodasilva.artist.domain.BaseAuditableEntity;
 import jakarta.persistence.*;
 
 @Entity
