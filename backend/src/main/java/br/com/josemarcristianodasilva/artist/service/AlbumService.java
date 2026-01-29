@@ -1,6 +1,8 @@
 package br.com.josemarcristianodasilva.artist.service;
 
 import br.com.josemarcristianodasilva.artist.api.dto.AlbumCoverResponse;
+import br.com.josemarcristianodasilva.artist.api.dto.AlbumMapper;
+import br.com.josemarcristianodasilva.artist.api.dto.AlbumResponse;
 import br.com.josemarcristianodasilva.artist.api.exception.ResourceNotFoundException;
 import br.com.josemarcristianodasilva.artist.config.UploadProperties;
 import br.com.josemarcristianodasilva.artist.domain.model.Album;
@@ -33,19 +35,34 @@ public class AlbumService {
     }
 
     @Transactional(readOnly = true)
-    public Page<Album> list(String title, Pageable pageable) {
-        if (title == null || title.isBlank()) {
-            return albumRepository.findAll(pageable);
-        }
-        return albumRepository.findByTitleContainingIgnoreCase(title, pageable);
-    }
+    public Page<AlbumResponse> list(String title, Pageable pageable) {
+        Page<Album> page = (title == null || title.isBlank())
+                ? albumRepository.findAll(pageable)
+                : albumRepository.findByTitleContainingIgnoreCase(title, pageable);
 
+        return page.map(a -> {
+            String key = a.getCoverObjectKey();
+            String coverUrl = (key == null || key.isBlank()) ? null : minioStorageService.presignedGetUrl(key);
+            return AlbumMapper.toResponse(a, coverUrl);
+        });
+    }
     @Transactional(readOnly = true)
-    public Album getById(Long id) {
-        return albumRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Album not found: " + id));
-    }
+    public AlbumResponse getById(Long id) {
+        Album a = albumRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Album not found: " + id));
 
+        String coverUrl = null;
+        String key = a.getCoverObjectKey();
+        if (key != null && !key.isBlank()) {
+            coverUrl = minioStorageService.presignedGetUrl(key);
+        }
+
+        return AlbumMapper.toResponse(a, coverUrl);
+    }
+    private Album getEntityById(Long id) {
+        return albumRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Album not found: " + id));
+    }
     @Transactional
     public Album create(String title, Set<Long> artistIds) {
         var album = new Album(title);
@@ -55,16 +72,15 @@ public class AlbumService {
 
     @Transactional
     public Album update(Long id, String title, Set<Long> artistIds) {
-        var album = getById(id);
+        Album album = getEntityById(id);
         album.setTitle(title);
         applyArtists(album, artistIds);
         return albumRepository.save(album);
     }
-
     @Transactional
     public void delete(Long id) {
         if (!albumRepository.existsById(id)) {
-            throw new IllegalArgumentException("Album not found: " + id);
+            throw new ResourceNotFoundException("Album not found: " + id);
         }
         albumRepository.deleteById(id);
     }

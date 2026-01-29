@@ -6,7 +6,7 @@ import java.util.Set;
 public record AlbumResponse(
         Long id,
         String title,
-        String coverObjectKey,
+        String coverUrl,
         Set<Long> artistIds,
         Instant createdAt,
         Instant updatedAt

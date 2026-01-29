@@ -1,6 +1,9 @@
 package br.com.josemarcristianodasilva.artist.api.controller;
 
-import br.com.josemarcristianodasilva.artist.api.dto.*;
+import br.com.josemarcristianodasilva.artist.api.dto.AlbumCoverResponse;
+import br.com.josemarcristianodasilva.artist.api.dto.AlbumCreateRequest;
+import br.com.josemarcristianodasilva.artist.api.dto.AlbumResponse;
+import br.com.josemarcristianodasilva.artist.api.dto.AlbumUpdateRequest;
 import br.com.josemarcristianodasilva.artist.service.AlbumService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -26,12 +29,12 @@ public class AlbumController {
             @RequestParam(required = false) String title,
             @PageableDefault(size = 10) Pageable pageable
     ) {
-        return service.list(title, pageable).map(AlbumMapper::toResponse);
+        return service.list(title, pageable);
     }
 
     @GetMapping("/{id}")
     public AlbumResponse get(@PathVariable Long id) {
-        return AlbumMapper.toResponse(service.getById(id));
+        return service.getById(id);
     }
 
     @PostMapping
@@ -41,7 +44,8 @@ public class AlbumController {
     ) {
         var saved = service.create(req.title(), req.artistIds());
         var location = uri.path("/v1/albums/{id}").buildAndExpand(saved.getId()).toUri();
-        return ResponseEntity.created(location).body(AlbumMapper.toResponse(saved));
+
+        return ResponseEntity.created(location).body(service.getById(saved.getId()));
     }
 
     @PutMapping("/{id}")
@@ -49,7 +53,8 @@ public class AlbumController {
             @PathVariable Long id,
             @Valid @RequestBody AlbumUpdateRequest req
     ) {
-        return AlbumMapper.toResponse(service.update(id, req.title(), req.artistIds()));
+        service.update(id, req.title(), req.artistIds());
+        return service.getById(id);
     }
 
     @DeleteMapping("/{id}")
@@ -57,6 +62,7 @@ public class AlbumController {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
+
     @PostMapping("/{id}/cover")
     public ResponseEntity<AlbumCoverResponse> uploadCover(
             @PathVariable Long id,
@@ -69,11 +75,10 @@ public class AlbumController {
     public ResponseEntity<String> getCoverUrl(@PathVariable Long id) {
         return ResponseEntity.ok(service.getCoverUrl(id));
     }
+
     @DeleteMapping("/{id}/cover")
     public ResponseEntity<Void> deleteCover(@PathVariable Long id) {
         service.deleteCover(id);
         return ResponseEntity.noContent().build();
     }
-
-
 }
