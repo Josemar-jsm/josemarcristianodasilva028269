@@ -35,14 +35,14 @@ public class AlbumController {
     )
     @ApiResponse(responseCode = "200", description = "OK")
     @GetMapping
-    public Page<AlbumResponse> list(
+    public PageResponse<AlbumResponse> list(
             @Parameter(description = "Filter by title (optional)")
             @RequestParam(required = false) String title,
 
             @Parameter(description = "Pagination parameters")
             @PageableDefault(size = 10) Pageable pageable
     ) {
-        return service.list(title, pageable);
+        return PageResponse.from(service.list(title, pageable));
     }
     @Operation(
             summary = "Get album by id",

@@ -1,9 +1,6 @@
 package br.com.josemarcristianodasilva.artist.api.controller;
 
-import br.com.josemarcristianodasilva.artist.api.dto.ArtistCreateRequest;
-import br.com.josemarcristianodasilva.artist.api.dto.ArtistMapper;
-import br.com.josemarcristianodasilva.artist.api.dto.ArtistResponse;
-import br.com.josemarcristianodasilva.artist.api.dto.ArtistUpdateRequest;
+import br.com.josemarcristianodasilva.artist.api.dto.*;
 import br.com.josemarcristianodasilva.artist.service.ArtistService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -36,14 +33,15 @@ public class ArtistController {
     )
     @ApiResponse(responseCode = "200", description = "OK")
     @GetMapping
-    public Page<ArtistResponse> list(
+    public PageResponse<ArtistResponse> list(
             @Parameter(description = "Filter by artist name (optional)")
             @RequestParam(required = false) String name,
 
             @Parameter(description = "Pagination parameters")
             @PageableDefault(size = 10) Pageable pageable
     ) {
-        return service.list(name, pageable).map(ArtistMapper::toResponse);
+        var page = service.list(name, pageable).map(ArtistMapper::toResponse);
+        return PageResponse.from(page);
     }
 
     @Operation(
