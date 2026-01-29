@@ -69,6 +69,11 @@ public class AlbumController {
     public ResponseEntity<String> getCoverUrl(@PathVariable Long id) {
         return ResponseEntity.ok(service.getCoverUrl(id));
     }
+    @DeleteMapping("/{id}/cover")
+    public ResponseEntity<Void> deleteCover(@PathVariable Long id) {
+        service.deleteCover(id);
+        return ResponseEntity.noContent().build();
+    }
 
 
 }

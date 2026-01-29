@@ -68,6 +68,19 @@ public class AlbumService {
         }
         albumRepository.deleteById(id);
     }
+    @Transactional
+    public void deleteCover(Long albumId) {
+        Album album = albumRepository.findById(albumId)
+                .orElseThrow(() -> new ResourceNotFoundException("Album not found: " + albumId));
+
+        String key = album.getCoverObjectKey();
+        if (key == null || key.isBlank()) {
+            throw new ResourceNotFoundException("Album cover not found: " + albumId);
+        }
+        minioStorageService.deleteIfExists(key);
+        album.setCoverObjectKey(null);
+        albumRepository.save(album);
+    }
 
     private void applyArtists(Album album, Set<Long> artistIds) {
         album.getArtists().clear();
