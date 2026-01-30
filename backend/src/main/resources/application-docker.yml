@@ -54,6 +54,7 @@ jwt:
   issuer: ${JWT_ISSUER:pss-mt}
   access-ttl-seconds: ${JWT_ACCESS_TTL_SECONDS:300}
   refresh-ttl-seconds: ${JWT_REFRESH_TTL_SECONDS:86400}
+  secret: ${JWT_SECRET:wvg6+UUc8zl0EZxVv+aGHi4GSMmJCrcsXzaGXlX1aXY=}
 
 springdoc:
   api-docs:

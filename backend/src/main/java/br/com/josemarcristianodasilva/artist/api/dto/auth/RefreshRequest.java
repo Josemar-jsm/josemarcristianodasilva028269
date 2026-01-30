@@ -1,4 +1,7 @@
 package br.com.josemarcristianodasilva.artist.api.dto.auth;
 
-public record RefreshRequest() {
-}
+import jakarta.validation.constraints.NotBlank;
+
+public record RefreshRequest(
+        @NotBlank String refreshToken
+) {}
