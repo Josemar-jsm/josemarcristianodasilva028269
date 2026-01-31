@@ -54,7 +54,7 @@ jwt:
   issuer: ${JWT_ISSUER:pss-mt}
   access-ttl-seconds: ${JWT_ACCESS_TTL_SECONDS:300}
   refresh-ttl-seconds: ${JWT_REFRESH_TTL_SECONDS:86400}
-  secret: ${JWT_SECRET:wvg6+UUc8zl0EZxVv+aGHi4GSMmJCrcsXzaGXlX1aXY=}
+  secret: ${JWT_SECRET:OR5wOD5ReCrRUxE6G4YK6UevEY3OKv02nSmcFNBTZlU=}
 
 springdoc:
   api-docs:
@@ -87,4 +87,7 @@ logging:
   level:
     root: INFO
     org.springframework: INFO
-    org.springframework.web: INFO
+    org.springframework.web: DEBUG
+    org.springframework.security: DEBUG
+    br.com.josemarcristianodasilva: DEBUG
+    org.hibernate.SQL: DEBUG

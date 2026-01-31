@@ -7,3 +7,4 @@ public record TokenResponse(
         String refreshToken,
         long refreshExpiresInSeconds
 ) {}
+

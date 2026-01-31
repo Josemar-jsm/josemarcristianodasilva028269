@@ -1,6 +1,7 @@
 package br.com.josemarcristianodasilva.artist.service;
 
 import br.com.josemarcristianodasilva.artist.config.JwtProperties;
+import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.*;
 import org.springframework.stereotype.Service;
 
@@ -22,32 +23,32 @@ public class JwtService {
 
     public String createAccessToken(String subject, List<String> roles) {
         var now = Instant.now();
-        var exp = now.plusSeconds(props.accessTtlSeconds());
+        var jwsHeader = JwsHeader.with(MacAlgorithm.HS256).build();
 
         var claims = JwtClaimsSet.builder()
                 .issuer(props.issuer())
                 .issuedAt(now)
-                .expiresAt(exp)
+                .expiresAt(now.plusSeconds(props.accessTtlSeconds()))
                 .subject(subject)
                 .claim("roles", roles)
                 .build();
 
-        return encoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+        return encoder.encode(JwtEncoderParameters.from(jwsHeader, claims)).getTokenValue();
     }
 
     public String createRefreshToken(String subject) {
         var now = Instant.now();
-        var exp = now.plusSeconds(props.refreshTtlSeconds());
+        var jwsHeader = JwsHeader.with(MacAlgorithm.HS256).build();
 
         var claims = JwtClaimsSet.builder()
                 .issuer(props.issuer())
                 .issuedAt(now)
-                .expiresAt(exp)
+                .expiresAt(now.plusSeconds(props.refreshTtlSeconds()))
                 .subject(subject)
                 .claim("typ", "refresh")
                 .build();
 
-        return encoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+        return encoder.encode(JwtEncoderParameters.from(jwsHeader, claims)).getTokenValue();
     }
 
     public Jwt decode(String token) {
