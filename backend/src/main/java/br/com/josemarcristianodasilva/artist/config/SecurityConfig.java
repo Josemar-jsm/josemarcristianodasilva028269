@@ -36,7 +36,8 @@ public class SecurityConfig {
             new AntPathRequestMatcher("/actuator/health/**"),
             new AntPathRequestMatcher("/v3/api-docs/**"),
             new AntPathRequestMatcher("/swagger-ui/**"),
-            new AntPathRequestMatcher("/swagger-ui.html")
+            new AntPathRequestMatcher("/swagger-ui.html"),
+            new AntPathRequestMatcher("/error")
     );
 
     @Bean
@@ -49,8 +50,12 @@ public class SecurityConfig {
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers("/error").permitAll()
-                        .anyRequest().permitAll()
+                        .requestMatchers(HttpMethod.GET, "/v1/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/v1/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT,  "/v1/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PATCH,"/v1/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE,"/v1/**").hasRole("ADMIN")
+                        .anyRequest().authenticated()
                 )
                 .build();
     }
@@ -59,12 +64,20 @@ public class SecurityConfig {
     @Order(Ordered.LOWEST_PRECEDENCE)
     public SecurityFilterChain apiChain(HttpSecurity http, JwtDecoder decoder) throws Exception {
         return http
+                .securityMatcher("/v1/**")
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers("/error").permitAll()
+
+                        .requestMatchers(HttpMethod.GET, "/v1/**").authenticated()
+
+                        .requestMatchers(HttpMethod.POST, "/v1/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT,  "/v1/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PATCH,"/v1/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE,"/v1/**").hasRole("ADMIN")
+
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth -> oauth
