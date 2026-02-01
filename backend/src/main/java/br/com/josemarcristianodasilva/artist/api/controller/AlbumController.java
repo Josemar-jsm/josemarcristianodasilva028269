@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -35,6 +36,7 @@ public class AlbumController {
     )
     @ApiResponse(responseCode = "200", description = "OK")
     @GetMapping
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public PageResponse<AlbumResponse> list(
             @Parameter(description = "Filter by title (optional)")
             @RequestParam(required = false) String title,
@@ -53,6 +55,7 @@ public class AlbumController {
     @ApiResponse(responseCode = "404", description = "Album not found",
             content = @Content(schema = @Schema(implementation = org.springframework.http.ProblemDetail.class)))
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public AlbumResponse get(
             @Parameter(description = "Album id", example = "1")
             @PathVariable Long id
@@ -73,6 +76,7 @@ public class AlbumController {
     @ApiResponse(responseCode = "400", description = "Validation error",
             content = @Content(schema = @Schema(implementation = org.springframework.http.ProblemDetail.class)))
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<AlbumResponse> create(
             @Valid @org.springframework.web.bind.annotation.RequestBody AlbumCreateRequest req,
             UriComponentsBuilder uri
@@ -98,6 +102,7 @@ public class AlbumController {
     @ApiResponse(responseCode = "404", description = "Album not found",
             content = @Content(schema = @Schema(implementation = org.springframework.http.ProblemDetail.class)))
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public AlbumResponse update(
             @Parameter(description = "Album id", example = "1")
             @PathVariable Long id,
@@ -115,6 +120,7 @@ public class AlbumController {
     @ApiResponse(responseCode = "404", description = "Album not found",
             content = @Content(schema = @Schema(implementation = org.springframework.http.ProblemDetail.class)))
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(
             @Parameter(description = "Album id", example = "1")
             @PathVariable Long id
@@ -136,6 +142,7 @@ public class AlbumController {
             value = "/{id}/cover",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE
     )
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<AlbumCoverResponse> uploadCover(
             @Parameter(description = "Album id", example = "1")
             @PathVariable Long id,
@@ -158,6 +165,7 @@ public class AlbumController {
     @ApiResponse(responseCode = "404", description = "Album or cover not found",
             content = @Content(schema = @Schema(implementation = org.springframework.http.ProblemDetail.class)))
     @GetMapping("/{id}/cover-url")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<String> getCoverUrl(
             @Parameter(description = "Album id", example = "1")
             @PathVariable Long id
@@ -172,6 +180,7 @@ public class AlbumController {
     @ApiResponse(responseCode = "404", description = "Album or cover not found",
             content = @Content(schema = @Schema(implementation = org.springframework.http.ProblemDetail.class)))
     @DeleteMapping("/{id}/cover")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteCover(
             @Parameter(description = "Album id", example = "1")
             @PathVariable Long id
