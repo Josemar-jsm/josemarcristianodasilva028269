@@ -13,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -33,6 +34,7 @@ public class ArtistController {
     )
     @ApiResponse(responseCode = "200", description = "OK")
     @GetMapping
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public PageResponse<ArtistResponse> list(
             @Parameter(description = "Filter by artist name (optional)")
             @RequestParam(required = false) String name,
@@ -53,6 +55,7 @@ public class ArtistController {
     @ApiResponse(responseCode = "404", description = "Artist not found",
             content = @Content(schema = @Schema(implementation = org.springframework.http.ProblemDetail.class)))
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ArtistResponse get(
             @Parameter(description = "Artist id", example = "1")
             @PathVariable Long id
@@ -74,6 +77,7 @@ public class ArtistController {
     @ApiResponse(responseCode = "400", description = "Validation error",
             content = @Content(schema = @Schema(implementation = org.springframework.http.ProblemDetail.class)))
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ArtistResponse> create(
             @Valid @org.springframework.web.bind.annotation.RequestBody ArtistCreateRequest req,
             UriComponentsBuilder uri
@@ -102,6 +106,7 @@ public class ArtistController {
     @ApiResponse(responseCode = "404", description = "Artist not found",
             content = @Content(schema = @Schema(implementation = org.springframework.http.ProblemDetail.class)))
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ArtistResponse update(
             @Parameter(description = "Artist id", example = "1")
             @PathVariable Long id,
@@ -119,6 +124,7 @@ public class ArtistController {
     @ApiResponse(responseCode = "404", description = "Artist not found",
             content = @Content(schema = @Schema(implementation = org.springframework.http.ProblemDetail.class)))
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(
             @Parameter(description = "Artist id", example = "1")
             @PathVariable Long id
