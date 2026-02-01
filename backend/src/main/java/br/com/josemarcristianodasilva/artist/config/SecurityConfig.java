@@ -50,12 +50,7 @@ public class SecurityConfig {
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/v1/**").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/v1/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT,  "/v1/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PATCH,"/v1/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE,"/v1/**").hasRole("ADMIN")
-                        .anyRequest().authenticated()
+                        .anyRequest().permitAll()
                 )
                 .build();
     }
@@ -64,20 +59,12 @@ public class SecurityConfig {
     @Order(Ordered.LOWEST_PRECEDENCE)
     public SecurityFilterChain apiChain(HttpSecurity http, JwtDecoder decoder) throws Exception {
         return http
-                .securityMatcher("/v1/**")
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-
-                        .requestMatchers(HttpMethod.GET, "/v1/**").authenticated()
-
-                        .requestMatchers(HttpMethod.POST, "/v1/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT,  "/v1/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PATCH,"/v1/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE,"/v1/**").hasRole("ADMIN")
-
+                        .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth -> oauth
@@ -111,7 +98,6 @@ public class SecurityConfig {
                     .map(r -> r.startsWith("ROLE_") ? r : "ROLE_" + r)
                     .map(SimpleGrantedAuthority::new)
                     .collect(Collectors.toList());
-
             return new JwtAuthenticationToken(jwt, authorities, jwt.getSubject());
         };
     }
