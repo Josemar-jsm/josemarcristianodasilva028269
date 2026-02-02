@@ -16,6 +16,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
@@ -31,26 +32,41 @@ import java.util.stream.Collectors;
 @EnableConfigurationProperties(JwtProperties.class)
 public class SecurityConfig {
 
+    private final RateLimitFilter rateLimitFilter;
+
+    public SecurityConfig(RateLimitFilter rateLimitFilter) {
+        this.rateLimitFilter = rateLimitFilter;
+    }
     private static final RequestMatcher PUBLIC_ENDPOINTS = new OrRequestMatcher(
             new AntPathRequestMatcher("/v1/auth/**"),
             new AntPathRequestMatcher("/actuator/health/**"),
             new AntPathRequestMatcher("/v3/api-docs/**"),
             new AntPathRequestMatcher("/swagger-ui/**"),
             new AntPathRequestMatcher("/swagger-ui.html"),
-            new AntPathRequestMatcher("/error")
+            new AntPathRequestMatcher("/error"),
+            new AntPathRequestMatcher("/v1/regionais/**")
     );
 
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE)
-    public SecurityFilterChain publicChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain publicChain(HttpSecurity http, JwtDecoder decoder) throws Exception {
         return http
                 .securityMatcher(PUBLIC_ENDPOINTS)
+                .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .anyRequest().permitAll()
+                        .requestMatchers("/v1/auth/**", "/error",
+                                "/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
+
+                        .requestMatchers(HttpMethod.POST, "/v1/regionais/sync").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/v1/regionais/**").permitAll()
+                        .anyRequest().authenticated()
+                )
+                .oauth2ResourceServer(oauth -> oauth
+                        .jwt(jwt -> jwt.decoder(decoder).jwtAuthenticationConverter(jwtAuthConverter()))
                 )
                 .build();
     }
@@ -59,19 +75,25 @@ public class SecurityConfig {
     @Order(Ordered.LOWEST_PRECEDENCE)
     public SecurityFilterChain apiChain(HttpSecurity http, JwtDecoder decoder) throws Exception {
         return http
+                .securityMatcher("/v1/**")
+                .addFilterAfter(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/error").permitAll()
+
+                        .requestMatchers(HttpMethod.GET, "/v1/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/v1/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/v1/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/v1/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/v1/**").hasRole("ADMIN")
+
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth -> oauth
-                        .jwt(jwt -> jwt
-                                .decoder(decoder)
-                                .jwtAuthenticationConverter(jwtAuthConverter())
-                        )
+                        .jwt(jwt -> jwt.decoder(decoder).jwtAuthenticationConverter(jwtAuthConverter()))
                 )
                 .build();
     }
@@ -98,6 +120,7 @@ public class SecurityConfig {
                     .map(r -> r.startsWith("ROLE_") ? r : "ROLE_" + r)
                     .map(SimpleGrantedAuthority::new)
                     .collect(Collectors.toList());
+
             return new JwtAuthenticationToken(jwt, authorities, jwt.getSubject());
         };
     }
