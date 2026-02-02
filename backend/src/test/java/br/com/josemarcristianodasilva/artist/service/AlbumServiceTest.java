@@ -29,6 +29,8 @@ class AlbumServiceTest {
     @Mock private ArtistRepository artistRepository;
     @Mock private MinioStorageService minioStorageService;
     @Mock private UploadProperties uploadProperties;
+
+    @Mock private AlbumEventPublisher albumEventPublisher;
     @Mock private MultipartFile multipartFile;
 
     private AlbumService service;
@@ -39,7 +41,8 @@ class AlbumServiceTest {
                 albumRepository,
                 artistRepository,
                 minioStorageService,
-                uploadProperties
+                uploadProperties,
+                albumEventPublisher
         );
     }
     @Test

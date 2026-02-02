@@ -26,12 +26,20 @@ public class AlbumService {
     private final MinioStorageService minioStorageService;
 
     private final UploadProperties uploadProperties;
+    private final AlbumEventPublisher albumEventPublisher;
 
-    public AlbumService(AlbumRepository albumRepository, ArtistRepository artistRepository, MinioStorageService minioStorageService, UploadProperties uploadProperties) {
+    public AlbumService(
+            AlbumRepository albumRepository,
+            ArtistRepository artistRepository,
+            MinioStorageService minioStorageService,
+            UploadProperties uploadProperties,
+            AlbumEventPublisher albumEventPublisher
+    ) {
         this.albumRepository = albumRepository;
         this.artistRepository = artistRepository;
         this.minioStorageService = minioStorageService;
         this.uploadProperties = uploadProperties;
+        this.albumEventPublisher = albumEventPublisher;
     }
 
     @Transactional(readOnly = true)
@@ -67,7 +75,9 @@ public class AlbumService {
     public Album create(String title, Set<Long> artistIds) {
         var album = new Album(title);
         applyArtists(album, artistIds);
-        return albumRepository.save(album);
+        Album saved = albumRepository.save(album);
+        albumEventPublisher.publishAlbumCreated(saved);
+        return saved;
     }
 
     @Transactional
