@@ -1,23 +1,10 @@
-import { TestBed } from '@angular/core/testing';
-import { App } from './app';
+import { Routes } from '@angular/router';
+import { authGuard } from './core/auth/auth.guard';
+import { LoginPage } from './features/auth/login.page';
+import { HomePage } from './features/shell/home.page';
 
-describe('App', () => {
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [App],
-    }).compileComponents();
-  });
-
-  it('should create the app', () => {
-    const fixture = TestBed.createComponent(App);
-    const app = fixture.componentInstance;
-    expect(app).toBeTruthy();
-  });
-
-  it('should render title', async () => {
-    const fixture = TestBed.createComponent(App);
-    await fixture.whenStable();
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Hello, pss-web');
-  });
-});
+export const routes: Routes = [
+  { path: 'login', component: LoginPage },
+  { path: '', component: HomePage, canActivate: [authGuard] },
+  { path: '**', redirectTo: '' },
+];
