@@ -1,4 +1,4 @@
-package java.br.com.josemarcristianodasilva.artist.api.controller;
+package br.com.josemarcristianodasilva.artist.api.controller;
 
 import br.com.josemarcristianodasilva.artist.api.controller.AlbumController;
 import br.com.josemarcristianodasilva.artist.api.dto.AlbumCoverResponse;

@@ -16,6 +16,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
@@ -31,6 +32,12 @@ import java.util.stream.Collectors;
 @EnableConfigurationProperties(JwtProperties.class)
 public class SecurityConfig {
 
+    private final RateLimitFilter rateLimitFilter;
+
+    public SecurityConfig(RateLimitFilter rateLimitFilter) {
+        this.rateLimitFilter = rateLimitFilter;
+    }
+
     private static final RequestMatcher PUBLIC_ENDPOINTS = new OrRequestMatcher(
             new AntPathRequestMatcher("/v1/auth/**"),
             new AntPathRequestMatcher("/actuator/health/**"),
@@ -45,6 +52,7 @@ public class SecurityConfig {
     public SecurityFilterChain publicChain(HttpSecurity http) throws Exception {
         return http
                 .securityMatcher(PUBLIC_ENDPOINTS)
+                .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -65,19 +73,17 @@ public class SecurityConfig {
     public SecurityFilterChain apiChain(HttpSecurity http, JwtDecoder decoder) throws Exception {
         return http
                 .securityMatcher("/v1/**")
+                .addFilterAfter(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-
                         .requestMatchers(HttpMethod.GET, "/v1/**").authenticated()
-
                         .requestMatchers(HttpMethod.POST, "/v1/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT,  "/v1/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PATCH,"/v1/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE,"/v1/**").hasRole("ADMIN")
-
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth -> oauth
