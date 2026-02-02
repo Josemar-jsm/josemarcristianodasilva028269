@@ -1,24 +1,38 @@
 import { Component, inject } from '@angular/core';
-import { Router, RouterOutlet } from '@angular/router';
-import { CommonModule } from '@angular/common';
-import { map } from 'rxjs/operators';
+import { AsyncPipe, NgIf } from '@angular/common';
+import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
+
 import { AuthFacade } from '../../core/auth/auth.facade';
+
+type AuthStateView = {
+  isAuthenticated: boolean;
+  username: string | null;
+  roles: string[];
+};
 
 @Component({
   selector: 'app-shell',
   standalone: true,
-  imports: [CommonModule, RouterOutlet],
   templateUrl: './shell.page.html',
+  imports: [
+    AsyncPipe,
+    NgIf,
+    RouterOutlet,
+    RouterLink,
+    RouterLinkActive,
+  ],
 })
 export class ShellPage {
-  private readonly auth = inject(AuthFacade);
-  private readonly router = inject(Router);
+  private auth = inject(AuthFacade);
 
-  username$ = this.auth.state$.pipe(map(s => s.username ?? '(desconhecido)'));
-  roles$ = this.auth.state$.pipe(map(s => s.roles ?? []));
+  state$ = this.auth.state$ as unknown as import('rxjs').Observable<AuthStateView>;
 
-  logout() {
+  hasRole(role: string, roles: string[] | null | undefined): boolean {
+    const rolesArr = roles ?? [];
+    return rolesArr.includes(role);
+  }
+
+  logout(): void {
     this.auth.logout();
-    this.router.navigateByUrl('/login');
   }
 }

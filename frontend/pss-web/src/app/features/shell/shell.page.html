@@ -1,56 +1,63 @@
-<div class="min-h-screen bg-gray-100">
+<div class="min-h-screen bg-slate-100 flex">
+  <!-- Sidebar -->
+  <aside class="w-64 bg-slate-900 text-white p-6 hidden md:block">
+    <div class="text-2xl font-bold">PSS</div>
 
-  <!-- Topbar mobile -->
-  <header class="md:hidden bg-gray-900 text-white px-4 py-3 flex items-center justify-between">
-    <div class="font-bold">PSS</div>
-    <button (click)="logout()" class="text-sm px-3 py-1 rounded bg-red-500">
-      Sair
-    </button>
-  </header>
+    <div class="mt-4 text-sm text-white/80" *ngIf="(state$ | async) as s">
+      <div>Usuário: <span class="text-white">{{ s.username || '-' }}</span></div>
+      <div>Roles: <span class="text-white">{{ (s.roles || []).join(', ') || '-' }}</span></div>
+    </div>
 
-  <div class="flex">
+    <nav class="mt-8 space-y-2">
+      <a
+        class="block px-3 py-2 rounded hover:bg-white/10"
+        routerLink="/albums"
+        routerLinkActive="bg-white/10 font-semibold"
+        [routerLinkActiveOptions]="{ exact: true }"
+      >
+        Álbuns
+      </a>
 
-    <!-- Sidebar desktop -->
-    <aside class="hidden md:flex md:flex-col w-64 bg-gray-900 text-white min-h-screen p-4">
-      <div class="text-2xl font-bold mb-6">PSS</div>
+      <a
+        class="block px-3 py-2 rounded hover:bg-white/10"
+        routerLink="/artists"
+        routerLinkActive="bg-white/10 font-semibold"
+      >
+        Artistas
+      </a>
 
-      <div class="text-sm text-gray-300 mb-4">
-        <div>Usuário: <span class="text-white">{{ username$ | async }}</span></div>
-        <div>Roles: <span class="text-white">{{ (roles$ | async)?.join(', ') || '(nenhuma)' }}</span></div>
-      </div>
-
-      <nav class="flex flex-col gap-2">
-        <a routerLink="/albums"
-           routerLinkActive="bg-gray-800"
-           class="px-3 py-2 rounded hover:bg-gray-800">
-          Álbuns
-        </a>
-
-        <a routerLink="/artists"
-           routerLinkActive="bg-gray-800"
-           class="px-3 py-2 rounded hover:bg-gray-800">
-          Artistas
-        </a>
-
-        <a *ngIf="(roles$ | async)?.includes('ROLE_ADMIN')"
-           routerLink="/admin"
-           routerLinkActive="bg-gray-800"
-           class="px-3 py-2 rounded hover:bg-gray-800">
+      <ng-container *ngIf="(state$ | async) as s">
+        <a
+          *ngIf="hasRole('ROLE_ADMIN', s.roles)"
+          class="block px-3 py-2 rounded hover:bg-white/10"
+          routerLink="/admin"
+          routerLinkActive="bg-white/10 font-semibold"
+        >
           Admin
         </a>
-      </nav>
+      </ng-container>
 
-      <div class="mt-auto pt-6">
-        <button (click)="logout()" class="w-full px-3 py-2 rounded bg-red-500 hover:bg-red-600">
-          Sair
-        </button>
-      </div>
-    </aside>
+      <button
+        class="mt-6 w-full px-3 py-2 rounded bg-red-600 hover:bg-red-700 text-white text-sm"
+        (click)="logout()"
+      >
+        Sair
+      </button>
+    </nav>
+  </aside>
 
-    <!-- Content -->
-    <main class="flex-1 p-4 md:p-8">
-      <router-outlet></router-outlet>
-    </main>
+  <!-- Mobile top bar -->
+  <header class="md:hidden w-full bg-slate-900 text-white p-4 flex items-center justify-between">
+    <div class="font-bold">PSS</div>
+    <div class="flex gap-3 text-sm">
+      <a routerLink="/albums" routerLinkActive="underline">Álbuns</a>
+      <a routerLink="/artists" routerLinkActive="underline">Artistas</a>
+      <a routerLink="/admin" routerLinkActive="underline">Admin</a>
+    </div>
+  </header>
 
-  </div>
+  <!-- Content -->
+  <main class="flex-1 p-4 md:p-8">
+    <router-outlet></router-outlet>
+  </main>
 </div>
