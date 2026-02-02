@@ -44,12 +44,13 @@ public class SecurityConfig {
             new AntPathRequestMatcher("/v3/api-docs/**"),
             new AntPathRequestMatcher("/swagger-ui/**"),
             new AntPathRequestMatcher("/swagger-ui.html"),
-            new AntPathRequestMatcher("/error")
+            new AntPathRequestMatcher("/error"),
+            new AntPathRequestMatcher("/v1/regionais/**")
     );
 
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE)
-    public SecurityFilterChain publicChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain publicChain(HttpSecurity http, JwtDecoder decoder) throws Exception {
         return http
                 .securityMatcher(PUBLIC_ENDPOINTS)
                 .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
@@ -58,12 +59,13 @@ public class SecurityConfig {
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/v1/**").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/v1/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT,  "/v1/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PATCH,"/v1/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE,"/v1/**").hasRole("ADMIN")
+                        .requestMatchers("/v1/auth/**", "/error", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
+                        .requestMatchers("/v1/regionais/sync").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/v1/regionais/**").permitAll()
                         .anyRequest().authenticated()
+                )
+                .oauth2ResourceServer(oauth -> oauth
+                        .jwt(jwt -> jwt.decoder(decoder).jwtAuthenticationConverter(jwtAuthConverter()))
                 )
                 .build();
     }
@@ -87,10 +89,7 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth -> oauth
-                        .jwt(jwt -> jwt
-                                .decoder(decoder)
-                                .jwtAuthenticationConverter(jwtAuthConverter())
-                        )
+                        .jwt(jwt -> jwt.decoder(decoder).jwtAuthenticationConverter(jwtAuthConverter()))
                 )
                 .build();
     }
