@@ -1,16 +1,19 @@
-import { Injectable } from '@angular/core';
-import { ActivatedRouteSnapshot, CanActivate, Router, UrlTree } from '@angular/router';
+import { CanActivateFn, Router, ActivatedRouteSnapshot } from '@angular/router';
+import { inject } from '@angular/core';
+import { map } from 'rxjs/operators';
 import { AuthFacade } from './auth.facade';
 
-@Injectable({ providedIn: 'root' })
-export class RoleGuard implements CanActivate {
-  constructor(private auth: AuthFacade, private router: Router) {}
+export const roleGuard: CanActivateFn = (route: ActivatedRouteSnapshot) => {
+  const auth = inject(AuthFacade);
+  const router = inject(Router);
 
-  canActivate(route: ActivatedRouteSnapshot): boolean | UrlTree {
-    const roles = (route.data['roles'] as string[] | undefined) ?? [];
+  const required = (route.data['role'] as string) ?? '';
 
-    if (!this.auth.isLogged()) return this.router.parseUrl('/login');
-    const ok = roles.length === 0 || roles.some(r => this.auth.hasRole(r));
-    return ok ? true : this.router.parseUrl('/');
-  }
-}
+  return auth.state$.pipe(
+    map(s => {
+      const roles = s.roles ?? [];
+      if (required && roles.includes(required)) return true;
+      return router.createUrlTree(['/']);
+    })
+  );
+};
