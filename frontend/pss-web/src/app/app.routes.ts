@@ -32,6 +32,11 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/artists/artist-list.page').then(m => m.ArtistListPage),
       },
+      {
+        path: 'artists/:id',
+        loadComponent: () =>
+          import('./features/artists/artist-detail.page').then(m => m.ArtistDetailPage),
+      },
 
       {
         path: 'admin',
@@ -40,6 +45,7 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/admin/admin.page').then(m => m.AdminPage),
       },
+
     ],
   },
 

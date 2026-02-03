@@ -1,13 +1,13 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { ArtistFacade } from '../../core/artists/artist.facade';
 
 @Component({
   standalone: true,
   selector: 'app-artist-list',
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule],
   template: `
     <div class="max-w-6xl mx-auto">
       <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
@@ -55,7 +55,7 @@ import { ArtistFacade } from '../../core/artists/artist.facade';
                 <tr
                   *ngFor="let a of (s.data?.content ?? [])"
                   class="hover:bg-slate-50 transition-colors group cursor-pointer"
-                  [routerLink]="['/artists', a.id]"
+                   (click)="goDetail(a.id)"
                 >
                   <td class="py-3 px-4 text-slate-500 font-mono text-xs">{{ a.id }}</td>
                   <td class="py-3 px-4 font-medium text-slate-900">{{ a.name }}</td>
@@ -120,12 +120,17 @@ import { ArtistFacade } from '../../core/artists/artist.facade';
 })
 export class ArtistListPage implements OnInit {
   private facade = inject(ArtistFacade);
+  private router = inject(Router); // Corrigido: Router agora está disponível via import
 
   state$ = this.facade.state$;
   name = '';
 
   ngOnInit(): void {
     this.facade.refresh();
+  }
+
+  goDetail(id: number): void {
+    this.router.navigate(['/artists', id]);
   }
 
   reload(): void {
