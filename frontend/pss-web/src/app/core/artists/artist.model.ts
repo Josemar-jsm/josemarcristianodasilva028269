@@ -1,6 +1,7 @@
 export interface ArtistResponse {
   id: number;
   name: string;
+  albumCount: number;
   createdAt?: string;
   updatedAt?: string;
 }

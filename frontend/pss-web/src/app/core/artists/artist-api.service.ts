@@ -17,8 +17,6 @@ export class ArtistApiService {
     if (name && name.trim().length > 0) {
       params = params.set('name', name.trim());
     }
-
-    // IMPORTANTE: URL RELATIVA pra bater no Nginx /v1/
-    return this.http.get<PageResponse<ArtistResponse>>('/v1/artists', { params });
+    return this.http.get<PageResponse<ArtistResponse>>('/v1/ui/artists', { params });
   }
 }
