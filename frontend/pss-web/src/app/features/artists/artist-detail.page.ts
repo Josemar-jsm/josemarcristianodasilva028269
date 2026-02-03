@@ -1,6 +1,7 @@
-import { Component, OnDestroy, OnInit, inject } from '@angular/core'; // Adicionado inject
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule, DatePipe, Location } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
+import { DomSanitizer, SafeUrl } from '@angular/platform-browser'; // Adicionado
 import {
   BehaviorSubject,
   Subject,
@@ -32,7 +33,6 @@ const initialState: ArtistDetailState = {
   standalone: true,
   imports: [CommonModule, DatePipe],
   template: `
-    <!-- ... seu template HTML permanece igual ... -->
     <div class="max-w-6xl mx-auto">
       <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-4">
         <div>
@@ -90,7 +90,7 @@ const initialState: ArtistDetailState = {
                   <tr>
                     <th class="text-left py-3 px-4 w-24">ID</th>
                     <th class="text-left py-3 px-4">Título</th>
-                    <th class="text-left py-3 px-4">Capa</th>
+                    <th class="text-left py-3 px-4 w-40">Capa</th>
                     <th class="text-left py-3 px-4">Atualizado</th>
                   </tr>
                 </thead>
@@ -99,7 +99,24 @@ const initialState: ArtistDetailState = {
                     <td class="py-3 px-4 text-slate-500 font-mono">{{ a.id }}</td>
                     <td class="py-3 px-4 font-medium text-slate-900">{{ a.title }}</td>
                     <td class="py-3 px-4">
-                      <a *ngIf="a.coverUrl" [href]="a.coverUrl" target="_blank" class="text-blue-600 underline">Ver capa</a>
+                      <div class="flex flex-col gap-2">
+                        <!-- Aplicado sanitizeUrl para permitir o carregamento -->
+                        <img
+                          *ngIf="a.coverUrl"
+                          [src]="sanitizeUrl(a.coverUrl)"
+                          alt="Capa do Álbum"
+                          class="w-20 h-20 md:w-32 md:h-32 object-cover rounded shadow-sm border border-slate-200"
+                        >
+                        <a
+                          *ngIf="a.coverUrl"
+                          [href]="sanitizeUrl(a.coverUrl)"
+                          target="_blank"
+                          class="text-xs text-blue-600 hover:text-blue-800 underline font-medium"
+                        >
+                          Ver original
+                        </a>
+                        <span *ngIf="!a.coverUrl" class="text-slate-300 text-xs">Sem capa</span>
+                      </div>
                     </td>
                     <td class="py-3 px-4 text-slate-500">{{ a.updatedAt | date:'dd/MM/yyyy HH:mm' }}</td>
                   </tr>
@@ -123,12 +140,18 @@ export class ArtistDetailPage implements OnInit, OnDestroy {
   private api = inject(ArtistDetailApiService);
   private location = inject(Location);
   private router = inject(Router);
+  private sanitizer = inject(DomSanitizer);
 
   private destroy$ = new Subject<void>();
   private reload$ = new BehaviorSubject<number>(0);
 
   private readonly subject = new BehaviorSubject<ArtistDetailState>({ ...initialState });
   readonly state$ = this.subject.asObservable();
+
+  sanitizeUrl(url: string): SafeUrl {
+  const decodedUrl = url.replace(/&amp;/g, '&');
+  return this.sanitizer.bypassSecurityTrustUrl(decodedUrl);
+}
 
   ngOnInit(): void {
     const id$ = this.route.paramMap.pipe(
