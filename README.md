@@ -167,6 +167,16 @@ Utilizado para armazenar capas de álbuns
 
 *Readiness valida: banco de dados e MinIO*
 
+
+# Health Check Geral - {"status":"UP
+curl -i -H "Authorization: Bearer SEU_TOKEN_AQUI" http://localhost:8080/actuator/health
+
+# Liveness Probe - {"status":"UP
+curl -i -H "Authorization: Bearer SEU_TOKEN_AQUI" http://localhost:8080/actuator/health/liveness
+
+# Readiness Probe - {"status":"UP
+curl -i -H "Authorization: Bearer SEU_TOKEN_AQUI" http://localhost:8080/actuator/health/readiness"} 
+
 ---
 
 ##  Como executar
