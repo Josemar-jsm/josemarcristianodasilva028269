@@ -4,12 +4,7 @@ import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/rou
 
 import { AuthFacade } from '../../core/auth/auth.facade';
 import { Observable } from 'rxjs';
-
-type AuthStateView = {
-  isAuthenticated: boolean;
-  username: string | null;
-  roles: string[];
-};
+import { ToastCenterComponent } from './toast-center.component';
 
 @Component({
   selector: 'app-shell',
@@ -22,16 +17,17 @@ type AuthStateView = {
     RouterOutlet,
     RouterLink,
     RouterLinkActive,
+    ToastCenterComponent
   ],
 })
 export class ShellPage {
   private readonly auth = inject(AuthFacade);
   private readonly router = inject(Router);
 
-  state$ = this.auth.state$ as Observable<AuthStateView>;
+  readonly state$: Observable<any> = this.auth.state$;
 
   hasRole(role: string, roles: string[] | null | undefined): boolean {
-    return (roles ?? []).includes(role);
+    return !!roles?.includes(role);
   }
 
   logout(): void {

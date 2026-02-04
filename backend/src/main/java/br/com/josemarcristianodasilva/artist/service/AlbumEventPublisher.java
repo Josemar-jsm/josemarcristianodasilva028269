@@ -18,7 +18,7 @@ public class AlbumEventPublisher {
 
     public void publishAlbumCreated(Album album) {
         var event = new AlbumCreatedEvent(
-                "ALBUM_CREATED",
+                "album.created",
                 album.getId(),
                 album.getTitle(),
                 Instant.now()

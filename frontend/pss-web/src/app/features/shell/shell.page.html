@@ -4,8 +4,8 @@
   <header class="md:hidden sticky top-0 z-50 w-full bg-slate-900 text-white p-4 flex items-center justify-between shadow-md">
     <div class="font-bold text-xl tracking-wider text-blue-400">Tambor de Cururu</div>
     <nav class="flex gap-4 text-xs font-medium uppercase tracking-tighter">
-      <a routerLink="/albums" routerLinkActive="text-blue-400" class="transition-colors">Álbuns</a>
-      <a routerLink="/artists" routerLinkActive="text-blue-400" class="transition-colors">Artistas</a>
+      <a routerLink="/albums" routerLinkActive="text-blue-400">Álbuns</a>
+      <a routerLink="/artists" routerLinkActive="text-blue-400">Artistas</a>
       <button (click)="logout()" class="text-red-400 font-bold">Sair</button>
     </nav>
   </header>
@@ -15,13 +15,11 @@
     <div class="mb-8">
       <div class="text-3xl font-extrabold tracking-tight text-blue-500">Tambor de Cururu</div>
 
-      <!-- User Card -->
       <div class="mt-6 p-4 rounded-xl bg-white/5 border border-white/10" *ngIf="(state$ | async) as s">
         <p class="text-[10px] uppercase font-bold text-slate-500 mb-1">Logado como</p>
         <div class="truncate font-medium text-sm text-slate-100">{{ s.username || 'Visitante' }}</div>
         <div class="flex flex-wrap gap-1 mt-2">
-          <span *ngFor="let role of s.roles"
-                class="text-[9px] bg-blue-500/20 text-blue-300 px-1.5 py-0.5 rounded border border-blue-500/30">
+          <span *ngFor="let role of s.roles" class="text-[9px] bg-blue-500/20 text-blue-300 px-1.5 py-0.5 rounded border border-blue-500/30">
             {{ role.replace('ROLE_', '') }}
           </span>
         </div>
@@ -29,51 +27,30 @@
     </div>
 
     <nav class="flex-1 space-y-1">
-      <a
-        class="flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 hover:bg-white/10 group"
-        routerLink="/albums"
-        routerLinkActive="bg-blue-600 text-white shadow-lg shadow-blue-900/20"
-        [routerLinkActiveOptions]="{ exact: true }"
-      >
-        <svg class="w-5 h-5 opacity-70 group-hover:opacity-100" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/></svg>
+      <a class="flex items-center gap-3 px-4 py-3 rounded-lg transition-all hover:bg-white/10" routerLink="/albums" routerLinkActive="bg-blue-600 text-white shadow-lg">
         <span class="font-medium">Álbuns</span>
       </a>
-
-      <a
-        class="flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 hover:bg-white/10 group"
-        routerLink="/artists"
-        routerLinkActive="bg-blue-600 text-white shadow-lg shadow-blue-900/20"
-      >
-        <svg class="w-5 h-5 opacity-70 group-hover:opacity-100" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+      <a class="flex items-center gap-3 px-4 py-3 rounded-lg transition-all hover:bg-white/10" routerLink="/artists" routerLinkActive="bg-blue-600 text-white shadow-lg">
         <span class="font-medium">Artistas</span>
       </a>
 
       <ng-container *ngIf="(state$ | async) as s">
-        <a
-          *ngIf="hasRole('ROLE_ADMIN', s.roles)"
-          class="flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 hover:bg-white/10 group border-t border-white/5 mt-4 pt-4"
-          routerLink="/admin"
-          routerLinkActive="bg-amber-600 text-white shadow-lg shadow-amber-900/20"
-        >
-          <svg class="w-5 h-5 opacity-70 group-hover:opacity-100" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
-          <span class="font-medium text-amber-400 group-hover:text-amber-300">Admin</span>
+        <a *ngIf="hasRole('ROLE_ADMIN', s.roles)" class="flex items-center gap-3 px-4 py-3 rounded-lg transition-all hover:bg-white/10 border-t border-white/5 mt-4 pt-4" routerLink="/admin" routerLinkActive="bg-amber-600">
+          <span class="font-medium text-amber-400">Admin</span>
         </a>
       </ng-container>
     </nav>
 
     <div class="pt-6 border-t border-white/10">
-      <button
-        class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-red-600/10 text-red-500 hover:bg-red-600 hover:text-white transition-all duration-300 font-bold text-sm group cursor-pointer"
-        (click)="logout()"
-      >
-        <svg class="w-4 h-4 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+      <button (click)="logout()" class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-red-600/10 text-red-500 hover:bg-red-600 hover:text-white transition-all font-bold text-sm">
         Sair da Conta
       </button>
     </div>
   </aside>
 
+  <main class="flex-1 p-4 md:p-10 lg:p-12 overflow-y-auto relative">
+    <app-toast-center></app-toast-center>
 
-  <main class="flex-1 p-4 md:p-10 lg:p-12 overflow-y-auto">
     <div class="max-w-7xl mx-auto">
       <router-outlet></router-outlet>
     </div>
