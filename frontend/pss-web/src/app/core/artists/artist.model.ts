@@ -13,3 +13,9 @@ export type PageResponse<T> = {
   number: number;
   size: number;
 };
+
+export type ArtistCreateRequest = Pick<ArtistResponse, 'name'>;
+
+export type ArtistUpdateRequest = ArtistCreateRequest;
+
+export type ArtistSummary = Pick<ArtistResponse, 'id' | 'name'>;

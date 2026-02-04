@@ -14,3 +14,8 @@ export type PageResponse<T> = {
   number: number;
   size: number;
 };
+
+export type AlbumCreateRequest = Pick<AlbumResponse, 'title' | 'artistIds'>;
+
+
+export type AlbumUpdateRequest = AlbumCreateRequest;

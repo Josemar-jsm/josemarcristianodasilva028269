@@ -1,8 +1,9 @@
 import { Component, inject } from '@angular/core';
-import { AsyncPipe, NgIf } from '@angular/common';
-import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
+import { AsyncPipe, NgIf, NgFor } from '@angular/common';
+import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
 
 import { AuthFacade } from '../../core/auth/auth.facade';
+import { Observable } from 'rxjs';
 
 type AuthStateView = {
   isAuthenticated: boolean;
@@ -17,22 +18,24 @@ type AuthStateView = {
   imports: [
     AsyncPipe,
     NgIf,
+    NgFor,
     RouterOutlet,
     RouterLink,
     RouterLinkActive,
   ],
 })
 export class ShellPage {
-  private auth = inject(AuthFacade);
+  private readonly auth = inject(AuthFacade);
+  private readonly router = inject(Router);
 
-  state$ = this.auth.state$ as unknown as import('rxjs').Observable<AuthStateView>;
+  state$ = this.auth.state$ as Observable<AuthStateView>;
 
   hasRole(role: string, roles: string[] | null | undefined): boolean {
-    const rolesArr = roles ?? [];
-    return rolesArr.includes(role);
+    return (roles ?? []).includes(role);
   }
 
   logout(): void {
     this.auth.logout();
+    this.router.navigateByUrl('/login');
   }
 }
